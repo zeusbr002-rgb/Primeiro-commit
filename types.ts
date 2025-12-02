@@ -33,7 +33,8 @@ export interface ServiceOrder {
   priority: OSPriority;
   status: OSStatus;
   assigneeId: string | null;
-  dueDate: string;
+  dueDate: string; // Required for Calendar/Due Date logic
+  sla: string;     // Service Level Agreement target (e.g., "4h", "Next Day")
   createdAt: string;
   completedAt?: string;
   evidenceImage?: string; // Base64 string

@@ -11,7 +11,7 @@ export const MOCK_USERS: User[] = [
   },
   {
     id: 'u2',
-    name: 'Joh Doe',
+    name: 'John Doe',
     role: UserRole.CONTRACTOR,
     initials: 'JD'
   },
@@ -34,6 +34,7 @@ export const MOCK_ORDERS: ServiceOrder[] = [
     status: OSStatus.OPEN,
     assigneeId: 'u2',
     dueDate: new Date(Date.now() + 86400000).toISOString(),
+    sla: '24h',
     createdAt: new Date().toISOString(),
   },
   {
@@ -45,6 +46,7 @@ export const MOCK_ORDERS: ServiceOrder[] = [
     status: OSStatus.IN_PROGRESS,
     assigneeId: 'u2',
     dueDate: new Date(Date.now() + 43200000).toISOString(),
+    sla: '4h',
     createdAt: new Date(Date.now() - 3600000).toISOString(),
     evidenceImage: 'https://picsum.photos/400/300?random=10'
   },
@@ -57,6 +59,7 @@ export const MOCK_ORDERS: ServiceOrder[] = [
     status: OSStatus.COMPLETED,
     assigneeId: 'u3',
     dueDate: new Date(Date.now() - 86400000).toISOString(),
+    sla: '72h',
     createdAt: new Date(Date.now() - 172800000).toISOString(),
     completedAt: new Date(Date.now() - 43200000).toISOString(),
     evidenceImage: 'https://picsum.photos/400/300?random=11'
@@ -70,6 +73,7 @@ export const MOCK_ORDERS: ServiceOrder[] = [
     status: OSStatus.OPEN,
     assigneeId: null, // Unassigned
     dueDate: new Date(Date.now() + 172800000).toISOString(),
+    sla: '48h',
     createdAt: new Date().toISOString(),
   }
 ];
