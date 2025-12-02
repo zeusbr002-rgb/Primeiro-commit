@@ -11,7 +11,7 @@ export const MOCK_USERS: User[] = [
   },
   {
     id: 'u2',
-    name: 'John Doe',
+    name: 'Joh Doe',
     role: UserRole.CONTRACTOR,
     initials: 'JD'
   },
