@@ -1,0 +1,5 @@
+{
+  "name": "OmniFlow OS System",
+  "description": "Enterprise Service Order management system with distinct Admin (Desktop) and Contractor (Mobile) workflows, featuring real-time state management and comprehensive audit logging.",
+  "requestFramePermissions": []
+}
