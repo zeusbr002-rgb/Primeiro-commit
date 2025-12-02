@@ -1,12 +1,15 @@
 
+'use client';
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, ServiceOrder, UserRole, OSStatus, OSPriority, ScheduleItem } from './types';
-import { MOCK_ORDERS, MOCK_SCHEDULES } from './lib/mockData';
+import { MOCK_ORDERS, MOCK_SCHEDULES, MOCK_USERS } from './lib/mockData';
 
 interface OmniContextType {
   user: User | null;
   orders: ServiceOrder[];
   schedules: ScheduleItem[];
+  isMounted: boolean;
   login: (username: string) => Promise<boolean>;
   logout: () => void;
   updateOrder: (id: string, updates: Partial<ServiceOrder>) => void;
@@ -18,43 +21,68 @@ interface OmniContextType {
 const OmniContext = createContext<OmniContextType | undefined>(undefined);
 
 export const OmniProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  // HYDRATION GUARD
+  const [isMounted, setIsMounted] = useState(false);
+
+  // STATE INITIALIZATION (Use Mocks immediately to prevent flicker)
   const [user, setUser] = useState<User | null>(null);
-  const [orders, setOrders] = useState<ServiceOrder[]>([]);
-  const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
+  const [orders, setOrders] = useState<ServiceOrder[]>(MOCK_ORDERS);
+  const [schedules, setSchedules] = useState<ScheduleItem[]>(MOCK_SCHEDULES);
 
-  // INITIALIZATION & PERSISTENCE
+  // SAFE STORAGE LOADING
   useEffect(() => {
-    // Load User
-    const storedUser = localStorage.getItem('omni_user');
-    if (storedUser) setUser(JSON.parse(storedUser));
+    setIsMounted(true);
+    
+    if (typeof window !== 'undefined') {
+        // Load User
+        const storedUser = localStorage.getItem('omni_user');
+        if (storedUser) {
+            try {
+                setUser(JSON.parse(storedUser));
+            } catch (e) {
+                console.error("Failed to parse user", e);
+            }
+        }
 
-    // Load Data (or Mock)
-    const storedOrders = localStorage.getItem('omni_orders');
-    if (storedOrders) {
-      setOrders(JSON.parse(storedOrders));
-    } else {
-      setOrders(MOCK_ORDERS);
-      localStorage.setItem('omni_orders', JSON.stringify(MOCK_ORDERS));
-    }
+        // Load Orders (Sync with LS or Init LS with Mock)
+        const storedOrders = localStorage.getItem('omni_orders');
+        if (storedOrders) {
+            try {
+                setOrders(JSON.parse(storedOrders));
+            } catch (e) {
+                console.error("Failed to parse orders", e);
+            }
+        } else {
+            // First run: Seed LS with Mocks
+            localStorage.setItem('omni_orders', JSON.stringify(MOCK_ORDERS));
+        }
 
-    const storedSchedules = localStorage.getItem('omni_schedules');
-    if (storedSchedules) {
-      setSchedules(JSON.parse(storedSchedules));
-    } else {
-      setSchedules(MOCK_SCHEDULES);
-      localStorage.setItem('omni_schedules', JSON.stringify(MOCK_SCHEDULES));
+        // Load Schedules
+        const storedSchedules = localStorage.getItem('omni_schedules');
+        if (storedSchedules) {
+            try {
+                setSchedules(JSON.parse(storedSchedules));
+            } catch (e) {
+                console.error("Failed to parse schedules", e);
+            }
+        } else {
+            localStorage.setItem('omni_schedules', JSON.stringify(MOCK_SCHEDULES));
+        }
     }
   }, []);
 
-  // Sync Data on Change
+  // PERSISTENCE (Sync State -> LocalStorage)
   useEffect(() => {
-    if (orders.length > 0) localStorage.setItem('omni_orders', JSON.stringify(orders));
-  }, [orders]);
+    if (isMounted && typeof window !== 'undefined') {
+        localStorage.setItem('omni_orders', JSON.stringify(orders));
+    }
+  }, [orders, isMounted]);
 
   useEffect(() => {
-    if (schedules.length > 0) localStorage.setItem('omni_schedules', JSON.stringify(schedules));
-  }, [schedules]);
-
+    if (isMounted && typeof window !== 'undefined') {
+        localStorage.setItem('omni_schedules', JSON.stringify(schedules));
+    }
+  }, [schedules, isMounted]);
 
   // --- AUTH LOGIC ---
   const login = async (username: string): Promise<boolean> => {
@@ -78,13 +106,17 @@ export const OmniProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
     
     setUser(newUser);
-    localStorage.setItem('omni_user', JSON.stringify(newUser));
+    if (typeof window !== 'undefined') {
+        localStorage.setItem('omni_user', JSON.stringify(newUser));
+    }
     return true;
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('omni_user');
+    if (typeof window !== 'undefined') {
+        localStorage.removeItem('omni_user');
+    }
   };
 
   // --- DATA LOGIC ---
@@ -143,9 +175,14 @@ export const OmniProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // PREVENT SERVER RENDER MISMATCH
+  if (!isMounted) {
+    return null; // Or a loading spinner if preferred
+  }
+
   return (
     <OmniContext.Provider value={{
-      user, orders, schedules, login, logout, 
+      user, orders, schedules, isMounted, login, logout, 
       updateOrder, createOrder, addSchedule, completeOrder
     }}>
       {children}

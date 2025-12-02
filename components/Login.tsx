@@ -1,4 +1,6 @@
 
+'use client';
+
 import React, { useState } from 'react';
 import { useOmni } from '../context';
 import { Hexagon, ArrowRight, Loader2, User, KeyRound } from 'lucide-react';

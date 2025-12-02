@@ -1,4 +1,6 @@
 
+'use client';
+
 import React, { useState } from 'react';
 import { OmniProvider, useOmni } from './context';
 import { UserRole, ServiceOrder } from './types';
